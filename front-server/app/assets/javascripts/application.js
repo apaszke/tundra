@@ -19,3 +19,4 @@
 //= require socket.io
 //= require socket-upload.min
 //= require tundra
+//= require Chart.min
