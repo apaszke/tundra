@@ -57,7 +57,7 @@ videos = {
 	[38] = {['video'] = 'IMG_4468.m4v', ['label'] = 3, ['type'] = 'training'},
 	[39] = {['video'] = 'IMG_4469.m4v', ['label'] = 3, ['type'] = 'training'},
 	[40] = {['video'] = 'IMG_4470.m4v', ['label'] = 3, ['type'] = 'training'},
-	[41] = {['video'] = 'IMG_4471.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[41] = {['video'] = 'IMG_4471.m4v', ['label'] = 3, ['type'] = 'training'},
 	[42] = {['video'] = 'IMG_4472.m4v', ['label'] = 3, ['type'] = 'training'},
 	[43] = {['video'] = 'IMG_4473.m4v', ['label'] = 3, ['type'] = 'training'},
 	[44] = {['video'] = 'IMG_4474.m4v', ['label'] = 3, ['type'] = 'training'},
@@ -83,7 +83,7 @@ videos = {
 	[63] = {['video'] = 'IMG_4494.m4v', ['label'] = 2, ['type'] = 'training'},
 	[64] = {['video'] = 'IMG_4495.m4v', ['label'] = 2, ['type'] = 'training'},
 	[65] = {['video'] = 'IMG_4496.m4v', ['label'] = 2, ['type'] = 'training'},
-	[66] = {['video'] = 'IMG_4497.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[66] = {['video'] = 'IMG_4497.m4v', ['label'] = 2, ['type'] = 'training'},
 	[67] = {['video'] = 'IMG_4498.m4v', ['label'] = 2, ['type'] = 'training'},
 	[68] = {['video'] = 'IMG_4499.m4v', ['label'] = 2, ['type'] = 'training'},
 	[69] = {['video'] = 'IMG_4500.m4v', ['label'] = 2, ['type'] = 'training'},
@@ -115,7 +115,7 @@ videos = {
 	[93] = {['video'] = 'IMG_4524.m4v', ['label'] = 1, ['type'] = 'training'},
 	[94] = {['video'] = 'IMG_4525.m4v', ['label'] = 1, ['type'] = 'training'},
 	[95] = {['video'] = 'IMG_4526.m4v', ['label'] = 1, ['type'] = 'training'},
-	[96] = {['video'] = 'IMG_4527.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[96] = {['video'] = 'IMG_4527.m4v', ['label'] = 1, ['type'] = 'training'},
 	[97] = {['video'] = 'IMG_4528.m4v', ['label'] = 1, ['type'] = 'training'},
 	[98] = {['video'] = 'IMG_4529.m4v', ['label'] = 1, ['type'] = 'training'},
 	[99] = {['video'] = 'IMG_4530.m4v', ['label'] = 1, ['type'] = 'training'},
@@ -151,7 +151,6 @@ TMP_DIR = opt.dir .. "/tmpFrameFolder"
 --------------------------------------------------------------------------------
 -- PARSE ALL VIDEOS
 --------------------------------------------------------------------------------
-
 for videoNumber, video in ipairs(videos) do
 	io.write(string.format('processing sample %4d of %d: ', videoNumber, #videos))
 	io.flush()
@@ -201,7 +200,6 @@ torch.save(path.join(opt.output, 'preprocessing.t7'), {
 --------------------------------------------------------------------------------
 for videoNumber = 1, #videos do
 	if file_exists(name_for_video(videoNumber)) then
-		print('applying preprocessing to video ' .. videoNumber)
 		video = torch.load(name_for_video(videoNumber))
 		for i = 1, video['data']:size(1) do
 			video['data'][i]:add(-1, mean)

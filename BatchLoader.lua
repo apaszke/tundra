@@ -2,6 +2,7 @@ require 'torch'
 
 math.randomseed( os.time() )
 
+-- shuffles table in place
 local function shuffleTable( t )
     local rand = math.random
     assert( t, "shuffleTable() expected a table, got nil" )
@@ -17,7 +18,8 @@ end
 local BatchLoader = {}
 BatchLoader.__index = BatchLoader
 
-function BatchLoader.create(dir)
+-- inits batch file loader
+function BatchLoader.create( dir )
 	local self = {}
 	setmetatable(self, BatchLoader)
 	self.dir = dir
@@ -30,6 +32,7 @@ function BatchLoader.create(dir)
 	return self
 end
 
+-- loads files which are signed as training batches
 function BatchLoader:load_training_sets()
 	self.trainingSets = {}
 	self.currentTrainingSet = 1
@@ -37,15 +40,17 @@ function BatchLoader:load_training_sets()
 	for file in paths.files(self.dir) do
 		if file:find(self.ext .. '$') and file:find('training') then
 			table.insert(self.trainingSets, paths.concat(self.dir, file))
-			--table.insert(self.trainingSets, torch.load(paths.concat(self.dir, file)))
 		end
 	end
 end
 
+-- returns number of training batches
 function BatchLoader:num_training_batches()
 	return #self.trainingSets
 end
 
+-- returns next training batch
+-- when next is nil shuffles array and starts from first element
 function BatchLoader:next_training_batch()
 	if self.trainingSets == nil then
 		self:load_training_sets()
@@ -62,6 +67,7 @@ function BatchLoader:next_training_batch()
 	return data['data'], data['label']
 end
 
+-- loads files which are signed as validation batches
 function BatchLoader:load_validation_sets()
 	self.validationSets = {}
 	self.currentValidationSet = 1
@@ -73,10 +79,13 @@ function BatchLoader:load_validation_sets()
 	end
 end
 
+-- returns number of validation batches
 function BatchLoader:num_validation_batches()
 	return #self.validationSets
 end
 
+-- returns next validation batch
+-- when next is nil shuffles array and starts from first element
 function BatchLoader:next_validation_batch()
 	if self.validationSets == nil then
 		self:load_validation_sets()
