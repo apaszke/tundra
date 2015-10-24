@@ -19,7 +19,7 @@ videos = {
 	[5] = {['video'] = 'IMG_4432.m4v', ['label'] = 1, ['type'] = 'training'},
 
 	[6] = {['video'] = 'IMG_4433.m4v', ['label'] = 2, ['type'] = 'training'},
-	[7] = {['video'] = 'IMG_4434.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[7] = {['video'] = 'IMG_4434.m4v', ['label'] = 2, ['type'] = 'training'},
 	[8] = {['video'] = 'IMG_4435.m4v', ['label'] = 2, ['type'] = 'training'},
 	[9] = {['video'] = 'IMG_4436.m4v', ['label'] = 2, ['type'] = 'training'},
 	[10] = {['video'] = 'IMG_4437.m4v', ['label'] = 2, ['type'] = 'training'},
@@ -28,7 +28,7 @@ videos = {
 	[12] = {['video'] = 'IMG_4440.m4v', ['label'] = 3, ['type'] = 'training'},
 	[13] = {['video'] = 'IMG_4441.m4v', ['label'] = 3, ['type'] = 'training'},
 	[14] = {['video'] = 'IMG_4442.m4v', ['label'] = 3, ['type'] = 'training'},
-	[15] = {['video'] = 'IMG_4443.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[15] = {['video'] = 'IMG_4443.m4v', ['label'] = 3, ['type'] = 'training'},
 	[16] = {['video'] = 'IMG_4444.m4v', ['label'] = 3, ['type'] = 'training'},
 	[17] = {['video'] = 'IMG_4445.m4v', ['label'] = 3, ['type'] = 'training'},
 
@@ -43,7 +43,7 @@ videos = {
 	[25] = {['video'] = 'IMG_4453.m4v', ['label'] = 1, ['type'] = 'training'},
 	[26] = {['video'] = 'IMG_4454.m4v', ['label'] = 1, ['type'] = 'training'},
 	[27] = {['video'] = 'IMG_4455.m4v', ['label'] = 1, ['type'] = 'training'},
-	[28] = {['video'] = 'IMG_4456.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[28] = {['video'] = 'IMG_4456.m4v', ['label'] = 1, ['type'] = 'training'},
 	[29] = {['video'] = 'IMG_4457.m4v', ['label'] = 1, ['type'] = 'training'},
 	[30] = {['video'] = 'IMG_4458.m4v', ['label'] = 1, ['type'] = 'training'},
 	[31] = {['video'] = 'IMG_4459.m4v', ['label'] = 1, ['type'] = 'training'},
@@ -122,7 +122,48 @@ videos = {
 	[100] = {['video'] = 'IMG_4531.m4v', ['label'] = 1, ['type'] = 'training'},
 	[101] = {['video'] = 'IMG_4532.m4v', ['label'] = 1, ['type'] = 'training'},
 	[102] = {['video'] = 'IMG_4533.m4v', ['label'] = 1, ['type'] = 'training'},
-	[103] = {['video'] = 'IMG_4534.m4v', ['label'] = 1, ['type'] = 'training'}
+	[103] = {['video'] = 'IMG_4534.m4v', ['label'] = 1, ['type'] = 'training'},
+
+	[104] = {['video'] = 'IMG_4537.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[105] = {['video'] = 'IMG_4538.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[106] = {['video'] = 'IMG_4539.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[107] = {['video'] = 'IMG_4540.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[108] = {['video'] = 'IMG_4541.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[109] = {['video'] = 'IMG_4542.m4v', ['label'] = 1, ['type'] = 'validation'},
+
+	[110] = {['video'] = 'IMG_4543.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[111] = {['video'] = 'IMG_4544.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[112] = {['video'] = 'IMG_4545.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[113] = {['video'] = 'IMG_4546.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[114] = {['video'] = 'IMG_4547.m4v', ['label'] = 3, ['type'] = 'validation'},
+
+
+	[118] = {['video'] = 'IMG_4550.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[119] = {['video'] = 'IMG_4551.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[120] = {['video'] = 'IMG_4552.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[121] = {['video'] = 'IMG_4553.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[122] = {['video'] = 'IMG_4554.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[123] = {['video'] = 'IMG_4555.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[124] = {['video'] = 'IMG_4556.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[125] = {['video'] = 'IMG_4557.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[126] = {['video'] = 'IMG_4558.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[127] = {['video'] = 'IMG_4559.m4v', ['label'] = 2, ['type'] = 'validation'},
+	[128] = {['video'] = 'IMG_4560.m4v', ['label'] = 2, ['type'] = 'validation'},
+
+	[129] = {['video'] = 'IMG_4561.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[130] = {['video'] = 'IMG_4562.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[131] = {['video'] = 'IMG_4563.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[132] = {['video'] = 'IMG_4564.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[133] = {['video'] = 'IMG_4565.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[134] = {['video'] = 'IMG_4566.m4v', ['label'] = 3, ['type'] = 'validation'},
+	[135] = {['video'] = 'IMG_4567.m4v', ['label'] = 3, ['type'] = 'validation'},
+
+	[136] = {['video'] = 'IMG_4568.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[137] = {['video'] = 'IMG_4569.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[138] = {['video'] = 'IMG_4570.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[139] = {['video'] = 'IMG_4571.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[140] = {['video'] = 'IMG_4572.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[141] = {['video'] = 'IMG_4573.m4v', ['label'] = 1, ['type'] = 'validation'},
 }
 
 op = xlua.OptionParser('process_videos.lua [options]')
