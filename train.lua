@@ -21,7 +21,7 @@ cmd:option('-learning_rate_decay',0.97,'learning rate decay')
 cmd:option('-learning_rate_decay_after',10,'in number of epochs, when to start decaying the learning rate')
 cmd:option('-decay_rate',0.95,'decay rate for rmsprop')
 cmd:option('-dropout',0,'dropout for regularization, used after each RNN hidden layer. 0 = no dropout')
-cmd:option('-seq_length',105,'number of timesteps to unroll for')
+cmd:option('-seq_length',75,'number of timesteps to unroll for')
 cmd:option('-warmup_length',80,'number of timesteps to unroll for')
 cmd:option('-max_epochs',30,'number of full passes through the training data')
 cmd:option('-grad_clip',5,'clip gradients at this value')
@@ -30,7 +30,7 @@ cmd:option('-init_from', '', 'initialize network parameters from checkpoint at t
 -- bookkeeping
 cmd:option('-seed',123,'torch manual random number generator seed')
 cmd:option('-print_every',1,'how many steps/minibatches between printing out the loss')
-cmd:option('-eval_val_every',1000,'every how many iterations should we evaluate on validation data?')
+cmd:option('-eval_val_every',15,'every how many iterations should we evaluate on validation data?')
 -- GPU/CPU
 cmd:option('-gpuid',0,'which gpu to use. -1 = use CPU')
 cmd:text()
@@ -68,8 +68,8 @@ cnn:add( nn.ReLU() )
 cnn:add( nn.SpatialConvolution(20, 800, 18, 34) )
 cnn:add( nn.ReLU() )
 cnn:add( nn.SpatialConvolution(800, 600, 1, 1) )
+cnn:add( nn.ReLU() )
 cnn:add( nn.View(1, 600) )
-cnn:add( nn.LogSoftMax() )
 -- output is of size 1x600
 
 LSTM = require 'modules.LSTM'
@@ -117,7 +117,7 @@ if do_random_init then
     end
 end
 
-print('number of parameters in the cnn: ' .. params:nElement())
+print('number of parameters in total: ' .. params:nElement())
 -- make a bunch of clones after flattening, as that reallocates memory
 clones = {}
 for name,proto in pairs(protos) do
@@ -155,7 +155,7 @@ function eval_val()
             prediction = lst[#lst]
             if t > opt.warmup_length then
               loss_ct = loss_ct + 1
-              loss = loss + clones.criterion[t]:forward(prediction:squeeze(), y)
+              loss = loss + clones.criterion[t]:forward(prediction, y)
             end
         end
         ct = ct + 1
@@ -169,7 +169,7 @@ function eval_val()
 end
 
 function clone_list(tensor_list, zero_too)
-    -- utility function. todo: move away to some utils file?
+    -- utility function. TODO: move away to some utils file?
     -- takes a list of tensors and returns a list of cloned tensors
     local out = {}
     for k,v in pairs(tensor_list) do
@@ -199,39 +199,48 @@ function feval(x)
     local predictions = {}           -- softmax outputs
     local loss = 0
     for t=1,opt.seq_length do
-        clones.rnn[t]:training() -- make sure we are in correct mode (this is cheap, sets flag)
+        -- set training flag (for dropout)
+        clones.rnn[t]:training()
         cnn:training()
+        -- forward the data
         local cnn_out = cnn:forward(x[t])
         local lst = clones.rnn[t]:forward{cnn_out, unpack(rnn_state[t-1])}
+        -- save RNN state
         rnn_state[t] = {}
-        for i=1,#init_state do table.insert(rnn_state[t], lst[i]) end -- extract the state, without output
+        -- print(rnn_state[t-1][1])
+        for i=1,#init_state do table.insert(rnn_state[t], lst[i]) end -- without the output
         predictions[t] = lst[#lst] -- last element is the prediction
+        -- forward through the criterion only if the warmup period has passed
         if t > opt.warmup_length then
-          loss = loss + clones.criterion[t]:forward(predictions[t]:squeeze(), y)
+          loss = loss + clones.criterion[t]:forward(predictions[t], y)
         end
     end
+    local tmp = torch.exp(predictions[opt.seq_length])
+    print(string.format('%d: %f %f', y, tmp[1][1], tmp[1][2]))
     loss = loss / (opt.seq_length - opt.warmup_length + 1)
     ------------------ backward pass -------------------
     -- initialize gradient at time t to be zeros (there's no influence from future)
     local drnn_state = {[opt.seq_length] = clone_list(init_state, true)} -- true also zeros the clones
     for t=opt.seq_length,opt.warmup_length,-1 do
         -- backprop through loss, and softmax/linear
-        local doutput_t = clones.criterion[t]:backward(predictions[t]:squeeze(), y)
+        -- criterion gradient
+        local doutput_t = clones.criterion[t]:backward(predictions[t], y)
         table.insert(drnn_state[t], doutput_t)
+        -- refresh cnn output
         local cnn_out = cnn:forward(x[t])
+        -- lstm gradient
         local dlst = clones.rnn[t]:backward({cnn_out, unpack(rnn_state[t-1])}, drnn_state[t])
+        -- cnn gradient
         cnn:backward(x[t], dlst[1])
         drnn_state[t-1] = {}
         for k,v in pairs(dlst) do
             if k > 1 then -- k == 1 is gradient on x, which we dont need
-                -- note we do k-1 because first item is dembeddings, and then follow the
                 -- derivatives of the state, starting at index 2. I know...
                 drnn_state[t-1][k-1] = v
             end
         end
     end
     ------------------------ misc ----------------------
-    -- transfer final state to initial state (BPTT)
     -- clip gradient element-wise
     grad_params:div(opt.seq_length-opt.warmup_length+1)
     grad_params:clamp(-opt.grad_clip, opt.grad_clip)
@@ -269,21 +278,20 @@ for i = start_iter, iterations do
         print(string.format("%d/%d (epoch %.3f), train_loss = %6.8f, grad/param norm = %6.4e, param norm = %.2e time/batch = %.2fs",
                 i, iterations, epoch, train_loss, grad_norm / param_norm, param_norm, time))
         local ct = 0;
-        -- local xAxis = torch.Tensor(#train_losses_avg):apply(function() ct = ct + 1; return ct; end)
-        -- gnuplot.plot(xAxis, torch.Tensor(train_losses_avg))
     end
 
     -- exponential learning rate decay
-    -- if i % (math.floor(loader.total_samples) / 2) == 0 and opt.learning_rate_decay < 1 then
-    --     if epoch >= opt.learning_rate_decay_after then
-    --         local decay_factor = opt.learning_rate_decay
-    --         optim_state.learningRate = optim_state.learningRate * decay_factor -- decay it
-    --         print('decayed learning rate by a factor ' .. decay_factor .. ' to ' .. optim_state.learningRate)
-    --     end
-    -- end
+    if i % (math.floor(loader:num_training_batches()) / 2) == 0 and opt.learning_rate_decay < 1 then
+        if epoch >= opt.learning_rate_decay_after then
+            local decay_factor = opt.learning_rate_decay
+            optim_state.learningRate = optim_state.learningRate * decay_factor -- decay it
+            print('decayed learning rate by a factor ' .. decay_factor .. ' to ' .. optim_state.learningRate)
+        end
+    end
 
     -- every now and then or on last iteration
     if i % opt.eval_val_every == 0 or i == iterations then
+        print('\tvalidation loss: ' .. eval_val())
         print('no checkpoints yet')
     end
 
