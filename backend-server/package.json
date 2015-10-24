@@ -1,0 +1,24 @@
+{
+  "name": "aghacks",
+  "version": "1.0.0",
+  "description": "Predict who is walking in the clip",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apaszke/aghacks.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/apaszke/aghacks/issues"
+  },
+  "homepage": "https://github.com/apaszke/aghacks#readme",
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "coffee": "^1.2.0",
+    "express": "^4.13.3"
+  }
+}
