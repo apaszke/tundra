@@ -11,9 +11,16 @@ torch.setdefaulttensortype('torch.FloatTensor')
 -- label: label of person
 -- type: training/validation
 videos = {
-	[1] = {['video'] = 'IMG_4397.m4v', ['label'] = 1, ['type'] = 'training'},
-	[2] = {['video'] = 'IMG_4397.m4v', ['label'] = 2, ['type'] = 'training'},
-	[3] = {['video'] = 'IMG_4397.m4v', ['label'] = 1, ['type'] = 'validation'}
+	[1] = {['video'] = 'IMG_4428.m4v', ['label'] = 1, ['type'] = 'training'},
+	[2] = {['video'] = 'IMG_4429.m4v', ['label'] = 1, ['type'] = 'training'},
+	[3] = {['video'] = 'IMG_4430.m4v', ['label'] = 1, ['type'] = 'training'},
+	[4] = {['video'] = 'IMG_4431.m4v', ['label'] = 1, ['type'] = 'training'},
+	[5] = {['video'] = 'IMG_4432.m4v', ['label'] = 1, ['type'] = 'training'},
+	[6] = {['video'] = 'IMG_4433.m4v', ['label'] = 2, ['type'] = 'training'},
+	[7] = {['video'] = 'IMG_4434.m4v', ['label'] = 2, ['type'] = 'training'},
+	[8] = {['video'] = 'IMG_4435.m4v', ['label'] = 2, ['type'] = 'training'},
+	[9] = {['video'] = 'IMG_4436.m4v', ['label'] = 2, ['type'] = 'training'},
+	[10] = {['video'] = 'IMG_4437.m4v', ['label'] = 2, ['type'] = 'training'},
 }
 
 op = xlua.OptionParser('process_videos.lua [options]')
