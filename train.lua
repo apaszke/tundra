@@ -57,8 +57,6 @@ if opt.gpuid >= 0 then
     end
 end
 
-data = torch.load('data/tensor.t7')
-
 -- define CNN
 cnn = nn.Sequential()
 cnn:add( nn.SpatialConvolution(1, 20, 5, 5, 2, 2) )
@@ -74,10 +72,11 @@ cnn:add( nn.View(1, 600) )
 cnn:add( nn.LogSoftMax() )
 -- output is of size 1x600
 
-print('asdf')
-
 LSTM = require 'modules.LSTM'
 model_utils = require 'utils.model_utils'
+BatchLoader = require 'BatchLoader'
+
+loader = BatchLoader.create('data')
 
 local do_random_init = true
 local start_iter = 1
@@ -138,9 +137,9 @@ function eval_val()
     -- iterate over batches in the split
     local ct = 0
     local loss_ct = 0
-    for i = 1, 1 do--loader:num_validation_batches() do
+    for i = 1, loader:num_validation_batches() do
         -- fetch a batch
-        local x, y = data['data'], data['label']--loader:next_validation_batch()
+        local x, y = loader:next_validation_batch()
         if opt.gpuid >= 0 then -- ship the input arrays to GPU
             x = x:float():cuda()
             y = y:float():cuda()
@@ -184,13 +183,12 @@ end
 local init_state_global = clone_list(init_state)
 function feval(x)
     if x ~= param then
-        print('dbg')
         params:copy(x)
     end
     grad_params:zero()
 
     ------------------ get minibatch -------------------
-    local x, y = data['data'], data['label']--loader:next_training_batch()
+    local x, y = loader:next_training_batch()
     if opt.gpuid >= 0 then -- ship the input arrays to GPU
         -- have to convert to float because integers can't be cuda()'d
         x = x:float():cuda()
@@ -242,7 +240,6 @@ end
 
 -- start optimization here
 train_losses = train_losses or {}
-train_losses_avg = train_losses_avg or {}
 val_losses = val_losses or {}
 
 local optim_fun, optim_state
@@ -254,10 +251,10 @@ elseif opt.optim_algo == 'adadelta' then
     optim_state = {rho = 0.95, eps = 1e-7}
 end
 
-local iterations = opt.max_epochs * 1--loader:num_training_batches()
+local iterations = opt.max_epochs * loader:num_training_batches()
 local loss0 = nil
 for i = start_iter, iterations do
-    local epoch = i / 1--loader:num_training_batches()
+    local epoch = i / loader:num_training_batches()
 
     local timer = torch.Timer()
     local _, loss = optim_fun(feval, params, optim_state)

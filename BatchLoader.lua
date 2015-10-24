@@ -1,14 +1,18 @@
 require 'torch'
 
-local BatchLoader = torch.class('BatchLoader')
+local BatchLoader = {}
+BatchLoader.__index = BatchLoader
 
-function BatchLoader:__init(dir)
+function BatchLoader.create(dir)
+	local self = {}
+	setmetatable(self, BatchLoader)
 	self.dir = dir
 	self.ext = 't7'
 
 	-- load sets
 	self:load_training_sets()
 	self:load_validation_sets()
+	return self
 end
 
 function BatchLoader:load_training_sets()
@@ -33,12 +37,12 @@ function BatchLoader:next_training_batch()
 
 	-- we reached the end of training sets
 	if #self.trainingSets < self.currentTrainingSet then
-		return nil
+		self.currentTrainingSet = 1
 	end
 
 	data = self.trainingSets[self.currentTrainingSet]
 	self.currentTrainingSet = self.currentTrainingSet + 1
-	return data
+	return data['data'], data['label']
 end
 
 function BatchLoader:load_validation_sets()
@@ -63,10 +67,12 @@ function BatchLoader:next_validation_batch()
 
 	-- we reached the end of validations sets
 	if #self.validationSets < self.currentValidationSet then
-		return nil
+		self.currentValidationSet = 1
 	end
 
 	data = self.validationSets[self.currentValidationSet]
 	self.currentValidationSet = self.currentValidationSet + 1
-	return data
+	return data['data'], data['label']
 end
+
+return BatchLoader
