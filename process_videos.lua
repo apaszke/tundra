@@ -186,7 +186,6 @@ end
 -- CALCULATE PREPROCESSING
 --------------------------------------------------------------------------------
 for_preprocessing = torch.cat(for_preprocessing, 1)
-torch.save('for_p.t7', for_preprocessing)
 
 mean = torch.mean(for_preprocessing, 1):squeeze()
 std = torch.std(for_preprocessing, 1):squeeze()
