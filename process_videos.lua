@@ -125,14 +125,17 @@ for videoNumber, video in ipairs(videos) do
 	end
 
 	-- conver to grey images
-	grey_images = {}
+	-- grey_images = {}
+	big_tensor = torch.Tensor(opt.batchLength, 427, 240)
 	for i,cur_image in ipairs(images) do
-		table.insert(grey_images, image.rgb2y(cur_image))
+		-- table.insert(grey_images, image.rgb2y(cur_image))
+		big_tensor[i]:copy(image.rgb2y(cur_image))
 	end
 
+	-- print(grey_images)
 	-- produce output
 	res = {}
-	res['data'] = grey_images
+	res['data'] = big_tensor
 	res['label'] = video['label']
 
 	-- save result in torch file
