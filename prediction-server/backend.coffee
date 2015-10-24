@@ -2,6 +2,8 @@ exec = require('child_process').exec
 fs = require 'fs'
 express = require 'express'
 bodyParser = require 'body-parser'
+SocketIo = require 'socket.io'
+siofu = require "socketio-file-upload"
 
 ServerDir = "prediction-server"
 Filename = "video.mp4"
@@ -29,19 +31,20 @@ processVideo = (cb) ->
                 cb null, stdout
 
 app = express()
-app.use bodyParser.raw()
+    .use(siofu.router)
+    .listen 3001
 
-app.use (req, res, next) =>
-  data = new Buffer ''
-  req.on 'data', (chunk) =>
-      data = Buffer.concat [data, chunk]
-  req.on 'end', =>
-    req.rawBody = data
-    fs.writeFile Filename, data
-    processVideo (err, prediction) ->
-        if err
-            console.error err
-        else
-            res.send prediction
+io = new SocketIo
+io.listen app
 
-server = app.listen 3000
+io.on "connection", (socket) ->
+    uploader = new siofu()
+    uploader.dir = __dirname
+    uploader.listen socket
+    uploader.on 'saved', ->
+        console.log "saved"
+        processVideo (err, prediction) ->
+            if err
+                console.error err
+            else
+                res.send prediction
