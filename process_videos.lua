@@ -2,6 +2,7 @@ require 'torch'
 require 'lfs'
 require 'image'
 require 'xlua'
+require 'utils.video'
 
 torch.setdefaulttensortype('torch.FloatTensor')
 
@@ -132,8 +133,7 @@ op:option{'-o', '--out', action='store', dest='output', help='folder to output f
 op:option{'-b', '--batch_length', action='store',dest='batch_length', help='number of frames per batch', default=150}
 opt = op:parse()
 
-opt.framesLength = tonumber(opt.framesLength)
-opt.batchLength = tonumber(opt.batchLength)
+opt.batch_length = tonumber(opt.batch_length)
 
 PREPRO_P = 0.003
 HEIGHT = 427
@@ -149,95 +149,12 @@ lfs.mkdir(opt.output)
 TMP_DIR = opt.dir .. "/tmpFrameFolder"
 
 --------------------------------------------------------------------------------
--- HELPER FUNCTIONS
---------------------------------------------------------------------------------
-function file_exists(name)
-   local f=io.open(name,"r")
-   if f~=nil then io.close(f) return true else return false end
-end
-
-function name_for_video(videoNumber)
-	return opt.output .. "/" .. videos[videoNumber]['type'] .. "_" .. videoNumber .. ".t7"
-end
-
-function find_files(dir, ext)
-	files = {}
-
-	-- go over all files in directory. We use an iterator, paths.files().
-	for file in paths.files(dir) do
-		-- We only load files that match the extension
-		if file:find(ext .. '$') then
-			-- and insert the ones we care about in our table
-			table.insert(files, paths.concat(dir, file))
-		end
-	end
-
-	-- check files
-	if #files == 0 then
-		error('Given directory does not contain any files of type: ' .. ext)
-	end
-
-	return files
-end
-
-function load_y_images(files)
-	for i,file in ipairs(files) do
-		-- load each image
-		table.insert(images, image.rgb2y(image.load(file)))
-	end
-end
-
-function slice_list(list, max_length)
-	slice = {}
-	for i,item in ipairs(list) do
-		if i <= max_length then
-			table.insert(slice, item)
-		end
-	end
-	return slice
-end
-
-function process_directory(dir, ext, batch_length)
-	-- store all files
-	files = find_files(dir, ext)
-
-	-- sort files by frame number
-	table.sort(files, function (a,b)
-		return tonumber(string.match(a,"%d+")) < tonumber(string.match(b,"%d+"))
-	end)
-
-	-- use only first batch_length files
-	used_files = slice_list(files, batch_length)
-
-	if #used_files < batch_length then
-		print(sys.COLORS.red .. string.format('%d/%d',#used_files,opt.batchLength))
-		return nil
-	else
-		print(sys.COLORS.green .. string.format('%d/%d',#used_files,#files))
-	end
-
-	-- load all images
-	images = load_y_images(used_files)
-
-	-- pack all images into one tensor
-	-- randomly select frames for preprocessing
-	big_tensor = torch.Tensor(opt.batchLength, HEIGHT, WIDTH)
-	for i,image in ipairs(images) do
-		if torch.randn(1)[1] < PREPRO_P then
-			table.insert(for_preprocessing, image)
-		end
-		big_tensor[i]:copy(image)
-	end
-
-	return big_tensor
-end
-
---------------------------------------------------------------------------------
 -- PARSE ALL VIDEOS
 --------------------------------------------------------------------------------
 
 for videoNumber, video in ipairs(videos) do
-	print(string.format('processing sample %d of %d', videoNumber, #videos))
+	io.write(string.format('processing sample %4d of %d: ', videoNumber, #videos))
+	io.flush()
 	-- create folder where all frames will be saved in
 	os.execute("rm -rf " .. TMP_DIR)
 	lfs.mkdir(TMP_DIR)
@@ -246,11 +163,19 @@ for videoNumber, video in ipairs(videos) do
 	os.execute("ffmpeg -loglevel panic -i " .. opt.dir .. "/" .. video['video'] .. " -r " .. opt.frames .. " -vf scale=240:-1 " .. TMP_DIR .. "/frame%d." .. opt.ext)
 
 	-- produce output
-	tensor = process_directory(opt.dir, opt.ext, opt.batch_length)
+	local tensor = process_directory(TMP_DIR, opt.ext, opt.batch_length)
+	local res
 	if tensor ~= nil then
 		res = {}
 		res['data'] = tensor
 		res['label'] = video['label']
+
+		local num_process = torch.random() % 4
+		while num_process > 0 do
+			local i = (torch.random() % tensor:size(1)) + 1
+			table.insert(for_preprocessing, tensor:sub(i,i))
+			num_process = num_process - 1
+		end
 
 		-- save result in torch file
 		torch.save(name_for_video(videoNumber), res)
@@ -261,8 +186,10 @@ end
 -- CALCULATE PREPROCESSING
 --------------------------------------------------------------------------------
 for_preprocessing = torch.cat(for_preprocessing, 1)
-mean = torch.mean(for_preprocessing, 1)
-std = torch.std(for_preprocessing, 1)
+torch.save('for_p.t7', for_preprocessing)
+
+mean = torch.mean(for_preprocessing, 1):squeeze()
+std = torch.std(for_preprocessing, 1):squeeze()
 std_inv = std:pow(-1)
 
 torch.save(path.join(opt.output, 'preprocessing.t7'), {
