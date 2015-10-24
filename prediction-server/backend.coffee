@@ -19,8 +19,8 @@ processVideo = (cb) ->
                 cb "Error with ffmpeg"
                 return
             # Here goes lua predict
-            cmd = "echo \'prediction goes here\'"
-            exec cmd, (error, stdout, stderr) ->
+            cmd = "th predict.lua -video_dir backend-server/#{FramesDir} -model backend-server/cp.t7"
+            exec cmd, {cwd: '..'}, (error, stdout, stderr) ->
                 if err
                     cb "Error with predicting"
                     return
