@@ -129,20 +129,28 @@ op:option{'-d', '--dir', action='store', dest='dir', help='directory to load vid
 op:option{'-e', '--ext', action='store', dest='ext', help='only load files of this extension', default='png'}
 op:option{'-f', '--frames', action='store', dest='frames', help='controls how frames must be skipped', default=15}
 op:option{'-o', '--out', action='store', dest='output', help='folder to output files', req=true}
-op:option{'-l', '--length', action='store',dest='framesLength', help='number of frames for file', default=150}
-op:option{'-b', '--batch_length', action='store',dest='batchLength', help='number of frames per batch', default=150}
+op:option{'-b', '--batch_length', action='store',dest='batch_length', help='number of frames per batch', default=150}
 opt = op:parse()
-op:summarize()
 
 opt.framesLength = tonumber(opt.framesLength)
 opt.batchLength = tonumber(opt.batchLength)
 
 PREPRO_P = 0.003
--- PREPRO_SAMPLES = 60
--- PATCH_SIZE = 48
--- HEIGHT = 427
--- WIDTH = 240
+HEIGHT = 427
+WIDTH = 240
 
+for_preprocessing = {}
+
+--------------------------------------------------------------------------------
+-- PREPARATION
+--------------------------------------------------------------------------------
+os.execute("rm " .. opt.output .. "/*")
+lfs.mkdir(opt.output)
+TMP_DIR = opt.dir .. "/tmpFrameFolder"
+
+--------------------------------------------------------------------------------
+-- HELPER FUNCTIONS
+--------------------------------------------------------------------------------
 function file_exists(name)
    local f=io.open(name,"r")
    if f~=nil then io.close(f) return true else return false end
@@ -152,87 +160,119 @@ function name_for_video(videoNumber)
 	return opt.output .. "/" .. videos[videoNumber]['type'] .. "_" .. videoNumber .. ".t7"
 end
 
--- remove and make new folder with compressed tensors
-os.execute("rm " .. opt.output .. "/*")
-lfs.mkdir(opt.output)
-
-tmp_dir = opt.dir .. "/tmpFrameFolder"
-for_preprocessing = {}
-for videoNumber, video in ipairs(videos) do
-	-- create folder where all frames will be saved in
-	os.execute("rm -rf " .. tmp_dir)
-	lfs.mkdir(tmp_dir)
-
-	-- extracts frames from video
-	os.execute("ffmpeg -loglevel panic -i " .. opt.dir .. "/" .. video['video'] .. " -r " .. opt.frames .. " -vf scale=240:-1 " .. tmp_dir .. "/frame%d." .. opt.ext)
-
-	-- store all files
+function find_files(dir, ext)
 	files = {}
 
 	-- go over all files in directory. We use an iterator, paths.files().
-	for file in paths.files(tmp_dir) do
+	for file in paths.files(dir) do
 		-- We only load files that match the extension
-		if file:find(opt.ext .. '$') then
+		if file:find(ext .. '$') then
 			-- and insert the ones we care about in our table
-			table.insert(files, paths.concat(tmp_dir, file))
+			table.insert(files, paths.concat(dir, file))
 		end
 	end
 
 	-- check files
 	if #files == 0 then
-		error('Given directory does not contain any files of type: ' .. opt.ext)
+		error('Given directory does not contain any files of type: ' .. ext)
 	end
 
-	-- sort files by frame number
-	table.sort(files, function (a,b) return tonumber(string.match(a,"%d+")) < tonumber(string.match(b,"%d+")) end)
-
-	-- show only odd frames (skip one)
-	tmp_files = {}
-	for i,file in ipairs(files) do
-		if i <= opt.batchLength then
-			table.insert(tmp_files, file)
-		end
-	end
-	print(#tmp_files)
-	if #tmp_files < opt.batchLength then
-		print('Video is too short!')
-		goto continue
-	end
-	files = tmp_files
-
-	-- load all images
-	images = {}
-	for i,file in ipairs(files) do
-		-- load each image
-		table.insert(images, image.load(file))
-	end
-
-	-- convert to grey images
-	big_tensor = torch.Tensor(opt.batchLength, 427, 240)
-	for i,cur_image in ipairs(images) do
-		y_image = image.rgb2y(cur_image)
-		if torch.randn(1)[1] < PREPRO_P then
-			table.insert(for_preprocessing, y_image)
-		end
-		big_tensor[i]:copy(y_image)
-	end
-
-	-- print(grey_images)
-	-- produce output
-	res = {}
-	res['data'] = big_tensor
-	res['label'] = video['label']
-
-	-- save result in torch file
-	torch.save(name_for_video(videoNumber), res)
-	::continue::
+	return files
 end
 
+function load_y_images(files)
+	for i,file in ipairs(files) do
+		-- load each image
+		table.insert(images, image.rgb2y(image.load(file)))
+	end
+end
+
+function slice_list(list, max_length)
+	slice = {}
+	for i,item in ipairs(list) do
+		if i <= max_length then
+			table.insert(slice, item)
+		end
+	end
+	return slice
+end
+
+function process_directory(dir, ext, batch_length)
+	-- store all files
+	files = find_files(dir, ext)
+
+	-- sort files by frame number
+	table.sort(files, function (a,b)
+		return tonumber(string.match(a,"%d+")) < tonumber(string.match(b,"%d+"))
+	end)
+
+	-- use only first batch_length files
+	used_files = slice_list(files, batch_length)
+
+	if #used_files < batch_length then
+		print(sys.COLORS.red .. string.format('%d/%d',#used_files,opt.batchLength))
+		return nil
+	else
+		print(sys.COLORS.green .. string.format('%d/%d',#used_files,#files))
+	end
+
+	-- load all images
+	images = load_y_images(used_files)
+
+	-- pack all images into one tensor
+	-- randomly select frames for preprocessing
+	big_tensor = torch.Tensor(opt.batchLength, HEIGHT, WIDTH)
+	for i,image in ipairs(images) do
+		if torch.randn(1)[1] < PREPRO_P then
+			table.insert(for_preprocessing, image)
+		end
+		big_tensor[i]:copy(image)
+	end
+
+	return big_tensor
+end
+
+--------------------------------------------------------------------------------
+-- PARSE ALL VIDEOS
+--------------------------------------------------------------------------------
+
+for videoNumber, video in ipairs(videos) do
+	print(string.format('processing sample %d of %d', videoNumber, #videos))
+	-- create folder where all frames will be saved in
+	os.execute("rm -rf " .. TMP_DIR)
+	lfs.mkdir(TMP_DIR)
+
+	-- extracts frames from video
+	os.execute("ffmpeg -loglevel panic -i " .. opt.dir .. "/" .. video['video'] .. " -r " .. opt.frames .. " -vf scale=240:-1 " .. TMP_DIR .. "/frame%d." .. opt.ext)
+
+	-- produce output
+	tensor = process_directory(opt.dir, opt.ext, opt.batch_length)
+	if tensor ~= nil then
+		res = {}
+		res['data'] = tensor
+		res['label'] = video['label']
+
+		-- save result in torch file
+		torch.save(name_for_video(videoNumber), res)
+	end
+end
+
+--------------------------------------------------------------------------------
+-- CALCULATE PREPROCESSING
+--------------------------------------------------------------------------------
 for_preprocessing = torch.cat(for_preprocessing, 1)
 mean = torch.mean(for_preprocessing, 1)
 std = torch.std(for_preprocessing, 1)
 std_inv = std:pow(-1)
 
+torch.save(path.join(opt.output, 'preprocessing.t7'), {
+	mean = mean,
+	std = std
+})
+
+--------------------------------------------------------------------------------
+-- APPLY TRANSFORM
+--------------------------------------------------------------------------------
 for videoNumber = 1, #videos do
 	if file_exists(name_for_video(videoNumber)) then
 		video = torch.load(name_for_video(videoNumber))
@@ -290,4 +330,4 @@ end
 -- end
 
 -- remove this folder, we do not need it anymore
-os.execute("rm -rf " .. tmp_dir)
+os.execute("rm -rf " .. TMP_DIR)
