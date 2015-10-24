@@ -72,23 +72,7 @@ cnn:add( nn.ReLU() )
 cnn:add( nn.SpatialConvolution(800, 600, 1, 1) )
 cnn:add( nn.View(1, 600) )
 cnn:add( nn.LogSoftMax() )
--- output is of size 600x1x1
-
-
--- crit = nn.ClassNLLCriterion()
--- crit:forward(cnn:forward(data['data'][1]), 2)
--- print('output:')
--- print(cnn.output:size())
--- cnn:backward(cnn.output, crit:backward(cnn.output, 2))
-
---[[
-output = cnn:forward(data['data'][1])
-print(output:size())
-crit = nn.BCECriterion()
-crit:forward(cnn.output, cnn.output)
-print(crit:backward(cnn.output, cnn.output:clone()):size())
-cnn:backward(cnn.output, crit:backward(cnn.output, cnn.output:clone()))
-]]--
+-- output is of size 1x600
 
 print('asdf')
 
