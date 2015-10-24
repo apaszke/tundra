@@ -27,7 +27,7 @@ videos = {
 	[12] = {['video'] = 'IMG_4440.m4v', ['label'] = 3, ['type'] = 'training'},
 	[13] = {['video'] = 'IMG_4441.m4v', ['label'] = 3, ['type'] = 'training'},
 	[14] = {['video'] = 'IMG_4442.m4v', ['label'] = 3, ['type'] = 'training'},
-	[15] = {['video'] = 'IMG_4443.m4v', ['label'] = 3, ['type'] = 'training'},
+	[15] = {['video'] = 'IMG_4443.m4v', ['label'] = 3, ['type'] = 'validation'},
 	[16] = {['video'] = 'IMG_4444.m4v', ['label'] = 3, ['type'] = 'training'},
 	[17] = {['video'] = 'IMG_4445.m4v', ['label'] = 3, ['type'] = 'training'},
 
@@ -42,7 +42,7 @@ videos = {
 	[25] = {['video'] = 'IMG_4453.m4v', ['label'] = 1, ['type'] = 'training'},
 	[26] = {['video'] = 'IMG_4454.m4v', ['label'] = 1, ['type'] = 'training'},
 	[27] = {['video'] = 'IMG_4455.m4v', ['label'] = 1, ['type'] = 'training'},
-	[28] = {['video'] = 'IMG_4456.m4v', ['label'] = 1, ['type'] = 'training'},
+	[28] = {['video'] = 'IMG_4456.m4v', ['label'] = 1, ['type'] = 'validation'},
 	[29] = {['video'] = 'IMG_4457.m4v', ['label'] = 1, ['type'] = 'training'},
 	[30] = {['video'] = 'IMG_4458.m4v', ['label'] = 1, ['type'] = 'training'},
 	[31] = {['video'] = 'IMG_4459.m4v', ['label'] = 1, ['type'] = 'training'}
@@ -61,20 +61,27 @@ op:summarize()
 opt.framesLength = tonumber(opt.framesLength)
 opt.batchLength = tonumber(opt.batchLength)
 
--- opt.dir = '/Users/VirrageS/Desktop'
--- opt.ext = 'png'
--- opt.frames = 30
--- opt.output = '/Users/VirrageS/Desktop/torch-files'
--- opt.framesLenght = 150
+PREPRO_P = 0.003
+-- PREPRO_SAMPLES = 60
+-- PATCH_SIZE = 48
+-- HEIGHT = 427
+-- WIDTH = 240
 
+function file_exists(name)
+   local f=io.open(name,"r")
+   if f~=nil then io.close(f) return true else return false end
+end
 
--- COMPUTE
+function name_for_video(videoNumber)
+	return opt.output .. "/" .. videos[videoNumber]['type'] .. "_" .. videoNumber .. ".t7"
+end
 
 -- remove and make new folder with compressed tensors
 os.execute("rm " .. opt.output .. "/*")
 lfs.mkdir(opt.output)
 
 tmp_dir = opt.dir .. "/tmpFrameFolder"
+for_preprocessing = {}
 for videoNumber, video in ipairs(videos) do
 	-- create folder where all frames will be saved in
 	os.execute("rm -rf " .. tmp_dir)
@@ -124,12 +131,14 @@ for videoNumber, video in ipairs(videos) do
 		table.insert(images, image.load(file))
 	end
 
-	-- conver to grey images
-	-- grey_images = {}
+	-- convert to grey images
 	big_tensor = torch.Tensor(opt.batchLength, 427, 240)
 	for i,cur_image in ipairs(images) do
-		-- table.insert(grey_images, image.rgb2y(cur_image))
-		big_tensor[i]:copy(image.rgb2y(cur_image))
+		y_image = image.rgb2y(cur_image)
+		if torch.randn(1)[1] < PREPRO_P then
+			table.insert(for_preprocessing, y_image)
+		end
+		big_tensor[i]:copy(y_image)
 	end
 
 	-- print(grey_images)
@@ -139,9 +148,70 @@ for videoNumber, video in ipairs(videos) do
 	res['label'] = video['label']
 
 	-- save result in torch file
-	torch.save(opt.output .. "/" .. video['type'] .. "_" .. videoNumber .. ".t7", res)
+	torch.save(name_for_video(videoNumber), res)
 	::continue::
 end
+
+for_preprocessing = torch.cat(for_preprocessing, 1)
+mean = torch.mean(for_preprocessing, 1)
+std = torch.std(for_preprocessing, 1)
+std_inv = std:pow(-1)
+
+for videoNumber = 1, #videos do
+	if file_exists(name_for_video(videoNumber)) then
+		video = torch.load(name_for_video(videoNumber))
+		for i = 1, video['data']:size(1) do
+			video['data'][i]:add(-1, mean)
+			video['data'][i]:cmul(std_inv)
+		end
+		torch.save(name_for_video(videoNumber), video)
+	end
+end
+
+-- run preprocessing
+-- samples = {}
+-- print('sampling from ' .. #for_preprocessing .. ' images')
+-- while #samples < PREPRO_SAMPLES do
+-- 	local x = torch.random() % (HEIGHT - PATCH_SIZE + 1) + 1
+-- 	local y = torch.random() % (WIDTH - PATCH_SIZE + 1) + 1
+-- 	local i = torch.random() % (#for_preprocessing) + 1
+-- 	table.insert(samples, for_preprocessing[i]:sub(1,1,x,x+PATCH_SIZE-1,y,y+PATCH_SIZE-1):reshape(1, PATCH_SIZE*PATCH_SIZE))
+-- end
+--
+-- samples = torch.cat(samples, 1)
+--
+-- torch.save('samples.t7', samples)
+
+
+-- zca = ZCA()
+-- zca:fit(samples)
+-- print('preprocessing data')
+-- for videoNumber, video in ipairs(videos) do
+-- 	local video = torch.load(name_for_video(videoNumber))
+-- 	local data = video['data']
+-- 	for frame_idx = 1, data:size(1) do
+-- 		local frame = data[frame_idx]
+-- 		for x = 1, HEIGHT, PATCH_SIZE do
+-- 			for y = 1, WIDTH, PATCH_SIZE do
+--
+-- 				if x + PATCH_SIZE > HEIGHT then
+-- 					x = HEIGHT - PATCH_SIZE + 1
+-- 				end
+-- 				if y + PATCH_SIZE > WIDTH then
+-- 					y = WIDTH - PATCH_SIZE + 1
+-- 				end
+--
+-- 				local patch = frame:sub(x,x+PATCH_SIZE-1,y,y+PATCH_SIZE-1)
+-- 				local transformed = zca:transform(patch:reshape(1,PATCH_SIZE*PATCH_SIZE))
+-- 				-- local transformed = patch
+-- 				frame:sub(x,x+PATCH_SIZE-1,y,y+PATCH_SIZE-1):copy(transformed:reshape(PATCH_SIZE, PATCH_SIZE))
+-- 			end
+-- 		end
+-- 		data[frame_idx]:copy(frame)
+-- 	end
+-- 	video.data:copy(data)
+-- 	torch.save(name_for_video(videoNumber), video)
+-- end
 
 -- remove this folder, we do not need it anymore
 os.execute("rm -rf " .. tmp_dir)
