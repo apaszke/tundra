@@ -3,8 +3,7 @@ require 'optim'
 
 local LSTM = require 'modules.LSTM'
 local model_utils = require 'utils.model_utils'
-local BatchLoader = require 'BatchLoader'
-
+local BatchLoader = require 'utils.BatchLoader'
 
 torch.setdefaulttensortype('torch.FloatTensor')
 

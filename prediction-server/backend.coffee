@@ -3,6 +3,7 @@ fs = require 'fs'
 express = require 'express'
 bodyParser = require 'body-parser'
 
+ServerDir = "prediction-server"
 Filename = "video.mp4"
 FramesDir = "frames"
 FramesExt = "png"
@@ -19,11 +20,12 @@ processVideo = (cb) ->
                 cb "Error with ffmpeg"
                 return
             # Here goes lua predict
-            cmd = "th predict.lua -video_dir backend-server/#{FramesDir} -model backend-server/cp.t7"
+            cmd = "th predict.lua -video_dir #{ServerDir}/#{FramesDir} -model #{ServerDir}/cp.t7"
             exec cmd, {cwd: '..'}, (error, stdout, stderr) ->
                 if err
                     cb "Error with predicting"
                     return
+                console.log stderr
                 cb null, stdout
 
 app = express()
