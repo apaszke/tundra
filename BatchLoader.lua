@@ -36,7 +36,8 @@ function BatchLoader:load_training_sets()
 
 	for file in paths.files(self.dir) do
 		if file:find(self.ext .. '$') and file:find('training') then
-			table.insert(self.trainingSets, torch.load(paths.concat(self.dir, file)))
+			table.insert(self.trainingSets, paths.concat(self.dir, file))
+			--table.insert(self.trainingSets, torch.load(paths.concat(self.dir, file)))
 		end
 	end
 end
@@ -56,7 +57,7 @@ function BatchLoader:next_training_batch()
 		self.currentTrainingSet = 1
 	end
 
-	data = self.trainingSets[self.currentTrainingSet]
+	data = torch.load(self.trainingSets[self.currentTrainingSet])
 	self.currentTrainingSet = self.currentTrainingSet + 1
 	return data['data'], data['label']
 end
@@ -67,7 +68,7 @@ function BatchLoader:load_validation_sets()
 
 	for file in paths.files(self.dir) do
 		if file:find(self.ext .. '$') and file:find('validation') then
-			table.insert(self.validationSets, torch.load(paths.concat(self.dir, file)))
+			table.insert(self.validationSets, paths.concat(self.dir, file))
 		end
 	end
 end
@@ -87,7 +88,7 @@ function BatchLoader:next_validation_batch()
 		self.currentValidationSet = 1
 	end
 
-	data = self.validationSets[self.currentValidationSet]
+	data = torch.load(self.validationSets[self.currentValidationSet])
 	self.currentValidationSet = self.currentValidationSet + 1
 	return data['data'], data['label']
 end
