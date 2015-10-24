@@ -109,7 +109,7 @@ end
 -- ship the model to the GPU if desired
 if opt.gpuid >= 0 then
     for k,v in pairs(protos) do v:cuda() end
-    rnn:cuda()
+    cnn:cuda()
 end
 
 -- put the above things into one flattened parameters tensor
