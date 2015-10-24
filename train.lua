@@ -65,14 +65,19 @@ end
 -- define CNN
 local cnn = nn.Sequential()
 cnn:add( nn.SpatialConvolution(1, 20, 5, 5, 2, 2) )
+cnn:add( nn.Dropout(opt.dropout) )
 cnn:add( nn.ReLU() )
 cnn:add( nn.SpatialConvolution(20, 20, 5, 5, 2, 2) )
+cnn:add( nn.Dropout(opt.dropout) )
 cnn:add( nn.ReLU() )
 cnn:add( nn.SpatialConvolution(20, 20, 5, 5, 3, 3) )
+cnn:add( nn.Dropout(opt.dropout) )
 cnn:add( nn.ReLU() )
 cnn:add( nn.SpatialConvolution(20, 800, 18, 34) )
+cnn:add( nn.Dropout(opt.dropout) )
 cnn:add( nn.ReLU() )
 cnn:add( nn.SpatialConvolution(800, 600, 1, 1) )
+cnn:add( nn.Dropout(opt.dropout) )
 cnn:add( nn.ReLU() )
 cnn:add( nn.View(1, 600) )
 -- output is of size 1x600
@@ -104,6 +109,7 @@ end
 -- ship the model to the GPU if desired
 if opt.gpuid >= 0 then
     for k,v in pairs(protos) do v:cuda() end
+    rnn:cuda()
 end
 
 -- put the above things into one flattened parameters tensor
