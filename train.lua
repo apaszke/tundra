@@ -1,6 +1,11 @@
 require 'nn'
 require 'optim'
 
+local LSTM = require 'modules.LSTM'
+local model_utils = require 'utils.model_utils'
+local BatchLoader = require 'BatchLoader'
+
+
 torch.setdefaulttensortype('torch.FloatTensor')
 
 cmd = torch.CmdLine()
@@ -58,7 +63,7 @@ if opt.gpuid >= 0 then
 end
 
 -- define CNN
-cnn = nn.Sequential()
+local cnn = nn.Sequential()
 cnn:add( nn.SpatialConvolution(1, 20, 5, 5, 2, 2) )
 cnn:add( nn.ReLU() )
 cnn:add( nn.SpatialConvolution(20, 20, 5, 5, 2, 2) )
@@ -72,11 +77,7 @@ cnn:add( nn.ReLU() )
 cnn:add( nn.View(1, 600) )
 -- output is of size 1x600
 
-LSTM = require 'modules.LSTM'
-model_utils = require 'utils.model_utils'
-BatchLoader = require 'BatchLoader'
-
-loader = BatchLoader.create('data')
+local loader = BatchLoader.create('data')
 
 local do_random_init = true
 local start_iter = 1
@@ -87,12 +88,12 @@ if string.len(opt.init_from) > 0 then
 else
     print('creating an LSTM with ' .. opt.rnn_size .. ' units in ' .. opt.num_layers .. ' layers')
     protos = {}
-    protos.rnn, forget_gates = LSTM.create(600, 2, opt.rnn_size, opt.num_layers, opt.dropout)
+    protos.rnn, forget_gates = LSTM.create(600, 3, opt.rnn_size, opt.num_layers, opt.dropout)
     protos.criterion = nn.ClassNLLCriterion()
 end
 
 -- the initial state of the cell/hidden states
-init_state = {}
+local init_state = {}
 for L=1,opt.num_layers do
     local h_init = torch.zeros(opt.rnn_size)
     if opt.gpuid >=0 then h_init = h_init:cuda() end
@@ -107,7 +108,7 @@ end
 
 -- put the above things into one flattened parameters tensor
 print('combining params')
-params, grad_params = model_utils.combine_all_parameters(protos.rnn, cnn)
+local params, grad_params = model_utils.combine_all_parameters(protos.rnn, cnn)
 
 -- initialization
 if do_random_init then
@@ -119,7 +120,7 @@ end
 
 print('number of parameters in total: ' .. params:nElement())
 -- make a bunch of clones after flattening, as that reallocates memory
-clones = {}
+local clones = {}
 for name,proto in pairs(protos) do
     print('cloning ' .. name)
     clones[name] = model_utils.clone_many_times(proto, opt.seq_length, 5)
@@ -148,7 +149,7 @@ function eval_val()
         for t = 1,opt.seq_length do
             clones.rnn[t]:evaluate() -- for dropout proper functioning
             cnn:evaluate()
-            local cnn_out = cnn:forward(x[t])
+            local cnn_out = cnn:forward(x:sub(t,t))
             local lst = clones.rnn[t]:forward{cnn_out, unpack(rnn_state[t-1])}
             rnn_state[t] = {}
             for i = 1,#init_state do table.insert(rnn_state[t], lst[i]) end
@@ -203,7 +204,7 @@ function feval(x)
         clones.rnn[t]:training()
         cnn:training()
         -- forward the data
-        local cnn_out = cnn:forward(x[t])
+        local cnn_out = cnn:forward(x:sub(t,t))
         local lst = clones.rnn[t]:forward{cnn_out, unpack(rnn_state[t-1])}
         -- save RNN state
         rnn_state[t] = {}
@@ -216,7 +217,7 @@ function feval(x)
         end
     end
     local tmp = torch.exp(predictions[opt.seq_length])
-    print(string.format('%d: %f %f', y, tmp[1][1], tmp[1][2]))
+    print(string.format('%d: %f %f %f', y, tmp[1][1], tmp[1][2], tmp[1][3]))
     loss = loss / (opt.seq_length - opt.warmup_length + 1)
     ------------------ backward pass -------------------
     -- initialize gradient at time t to be zeros (there's no influence from future)
@@ -227,11 +228,11 @@ function feval(x)
         local doutput_t = clones.criterion[t]:backward(predictions[t], y)
         table.insert(drnn_state[t], doutput_t)
         -- refresh cnn output
-        local cnn_out = cnn:forward(x[t])
+        local cnn_out = cnn:forward(x:sub(t,t))
         -- lstm gradient
         local dlst = clones.rnn[t]:backward({cnn_out, unpack(rnn_state[t-1])}, drnn_state[t])
         -- cnn gradient
-        cnn:backward(x[t], dlst[1])
+        cnn:backward(x:sub(t,t), dlst[1])
         drnn_state[t-1] = {}
         for k,v in pairs(dlst) do
             if k > 1 then -- k == 1 is gradient on x, which we dont need
@@ -248,8 +249,8 @@ function feval(x)
 end
 
 -- start optimization here
-train_losses = train_losses or {}
-val_losses = val_losses or {}
+local train_losses = train_losses or {}
+local val_losses = val_losses or {}
 
 local optim_fun, optim_state
 if opt.optim_algo == 'rmsprop' then
