@@ -1,9 +1,8 @@
 exec = require('child_process').exec
 fs = require 'fs'
 express = require 'express'
-bodyParser = require 'body-parser'
 SocketIo = require 'socket.io'
-siofu = require "socketio-file-upload"
+siofu = require 'socketio-file-upload'
 
 ServerDir = "prediction-server"
 Filename = "video.mp4"
@@ -21,7 +20,8 @@ processVideo = (cb) ->
             if err
                 cb "Error with ffmpeg"
                 return
-            cmd = "th predict.lua -video_dir #{ServerDir}/#{FramesDir} -model #{ServerDir}/cp.t7"
+            # cmd = "th predict.lua -video_dir #{ServerDir}/#{FramesDir} -model #{ServerDir}/cp.t7"
+            cmd = "ls"
             exec cmd, {cwd: '..'}, (error, stdout, stderr) ->
                 if err
                     cb "Error with predicting"
