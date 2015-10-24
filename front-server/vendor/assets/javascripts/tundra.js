@@ -7,9 +7,9 @@ var spinner;
 socket.on('prediction', function(msg){
     console.log('message: ' + msg);
     $('#spinner').fadeOut();
-    // var results = msg.split(" ").map(function(x){
-    //     return parseFloat(x);
-    // })
+    var results = msg.split(" ").map(function(x){
+        return parseFloat(x);
+    })
     var results = [0.2, 0.5, 0.3];
     var context = document.getElementById("myChart").getContext("2d");
     var data = {
