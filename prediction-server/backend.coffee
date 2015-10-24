@@ -1,22 +1,20 @@
 exec = require('child_process').exec
 fs = require 'fs'
 express = require 'express'
-bodyParser = require 'body-parser'
 SocketIo = require 'socket.io'
-siofu = require "socketio-file-upload"
+siofu = require 'socketio-file-upload'
 
 ServerDir = "prediction-server"
-Filename = "video.mp4"
 FramesDir = "frames"
 FramesExt = "png"
 Fps = 15
 
-processVideo = (cb) ->
+processVideo = (filename, cb) ->
     exec "rm -fr #{FramesDir} && mkdir -p #{FramesDir}", (err) ->
         if err
             cb "Error during preparations"
             return
-        cmd = "ffmpeg -loglevel panic -i #{Filename} -r #{Fps} -vf scale=240:-1 #{FramesDir}/frame%d.#{FramesExt}"
+        cmd = "ffmpeg -loglevel panic -i #{filename} -r #{Fps} -vf scale=240:-1 #{FramesDir}/frame%d.#{FramesExt}"
         exec cmd, (error, stdout, stderr) ->
             if err
                 cb "Error with ffmpeg"
@@ -42,7 +40,7 @@ io.on "connection", (socket) ->
     uploader.listen socket
     uploader.on 'saved', (evt) =>
         console.log "saved"
-        processVideo (err, prediction) =>
+        processVideo evt.file.pathName, (err, prediction) =>
             if err
                 console.error err
                 socket.emit 'error'
