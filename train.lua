@@ -14,8 +14,8 @@ cmd:text('Train a character-level language model')
 cmd:text()
 cmd:text('Options')
 -- data
-cmd:option('-data_dir','data/preprocessed','data directory')
-cmd:option('-prepro_dir','data/torch','torch data directory')
+cmd:option('-data_dir','data','data directory')
+cmd:option('-checkpoint_dir','checkpoint','checkpoint directory')
 -- model params
 cmd:option('-rnn_size', 64, 'size of LSTM internal state')
 cmd:option('-num_layers', 2, 'number of layers in the LSTM')
@@ -77,7 +77,7 @@ cnn:add( nn.ReLU() )
 cnn:add( nn.View(1, 600) )
 -- output is of size 1x600
 
-local loader = BatchLoader.create('data')
+local loader = BatchLoader.create(opt.data_dir)
 
 local do_random_init = true
 local start_iter = 1
@@ -143,7 +143,6 @@ function eval_val()
         local x, y = loader:next_validation_batch()
         if opt.gpuid >= 0 then -- ship the input arrays to GPU
             x = x:float():cuda()
-            y = y:float():cuda()
         end
         -- forward pass
         for t = 1,opt.seq_length do
@@ -193,7 +192,6 @@ function feval(x)
     if opt.gpuid >= 0 then -- ship the input arrays to GPU
         -- have to convert to float because integers can't be cuda()'d
         x = x:float():cuda()
-        y = y:float():cuda()
     end
     ------------------- forward pass -------------------
     local rnn_state = {[0] = init_state_global}
@@ -292,8 +290,15 @@ for i = start_iter, iterations do
 
     -- every now and then or on last iteration
     if i % opt.eval_val_every == 0 or i == iterations then
-        print('\tvalidation loss: ' .. eval_val())
-        print('no checkpoints yet')
+        val_loss = eval_val()
+        print('\tvalidation loss: ' .. val_loss)
+        local savefile = string.format('%s/cp_%.4f_epoch%.2f.t7', opt.checkpoint_dir, val_loss, epoch)
+        print('\tsaving checkpoint to file ' .. savefile)
+        local checkpoint = {}
+        checkpoint.models = {}
+        checkpoint.models.cnn = cnn
+        checkpoint.models.rnn = protos.rnn
+        torch.save(savefile, checkpoint);
     end
 
     if i % 10 == 0 then collectgarbage() end
