@@ -1,0 +1,52 @@
+// Place all the styles related to the Pages controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+// Place all the styles related to the Pages controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+
+/* General */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-image: url('http://s3.amazonaws.com/codecademy-content/courses/learn-rails/img/bg-static.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+.container {
+  margin: 0 auto;
+  width: 960px;
+}
+
+/* Main */
+.main {
+  color: #fff;
+  position: relative;
+  top: 100px;
+  text-align: center;
+}
+
+.main h1 {
+  font-size: 80px;
+  font-weight: 300;
+}
+
+.main p {
+  font-size: 30px;
+}
+
+@media screen and (max-width: 800px) {
+    body {
+        background-size: auto 100%;
+    }
+    .container {
+        width: 100%;
+    }
+}
