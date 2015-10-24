@@ -16,11 +16,36 @@ videos = {
 	[3] = {['video'] = 'IMG_4430.m4v', ['label'] = 1, ['type'] = 'validation'},
 	[4] = {['video'] = 'IMG_4431.m4v', ['label'] = 1, ['type'] = 'training'},
 	[5] = {['video'] = 'IMG_4432.m4v', ['label'] = 1, ['type'] = 'training'},
+
 	[6] = {['video'] = 'IMG_4433.m4v', ['label'] = 2, ['type'] = 'training'},
 	[7] = {['video'] = 'IMG_4434.m4v', ['label'] = 2, ['type'] = 'validation'},
 	[8] = {['video'] = 'IMG_4435.m4v', ['label'] = 2, ['type'] = 'training'},
 	[9] = {['video'] = 'IMG_4436.m4v', ['label'] = 2, ['type'] = 'training'},
 	[10] = {['video'] = 'IMG_4437.m4v', ['label'] = 2, ['type'] = 'training'},
+
+	[11] = {['video'] = 'IMG_4439.m4v', ['label'] = 3, ['type'] = 'training'},
+	[12] = {['video'] = 'IMG_4440.m4v', ['label'] = 3, ['type'] = 'training'},
+	[13] = {['video'] = 'IMG_4441.m4v', ['label'] = 3, ['type'] = 'training'},
+	[14] = {['video'] = 'IMG_4442.m4v', ['label'] = 3, ['type'] = 'training'},
+	[15] = {['video'] = 'IMG_4443.m4v', ['label'] = 3, ['type'] = 'training'},
+	[16] = {['video'] = 'IMG_4444.m4v', ['label'] = 3, ['type'] = 'training'},
+	[17] = {['video'] = 'IMG_4445.m4v', ['label'] = 3, ['type'] = 'training'},
+
+	[18] = {['video'] = 'IMG_4446.m4v', ['label'] = 2, ['type'] = 'training'},
+	[19] = {['video'] = 'IMG_4447.m4v', ['label'] = 2, ['type'] = 'training'},
+	[20] = {['video'] = 'IMG_4448.m4v', ['label'] = 2, ['type'] = 'training'},
+	[21] = {['video'] = 'IMG_4449.m4v', ['label'] = 2, ['type'] = 'training'},
+	[22] = {['video'] = 'IMG_4450.m4v', ['label'] = 2, ['type'] = 'training'},
+	[23] = {['video'] = 'IMG_4451.m4v', ['label'] = 2, ['type'] = 'training'},
+	[24] = {['video'] = 'IMG_4452.m4v', ['label'] = 2, ['type'] = 'training'},
+
+	[25] = {['video'] = 'IMG_4453.m4v', ['label'] = 1, ['type'] = 'training'},
+	[26] = {['video'] = 'IMG_4454.m4v', ['label'] = 1, ['type'] = 'training'},
+	[27] = {['video'] = 'IMG_4455.m4v', ['label'] = 1, ['type'] = 'training'},
+	[28] = {['video'] = 'IMG_4456.m4v', ['label'] = 1, ['type'] = 'training'},
+	[29] = {['video'] = 'IMG_4457.m4v', ['label'] = 1, ['type'] = 'training'},
+	[30] = {['video'] = 'IMG_4458.m4v', ['label'] = 1, ['type'] = 'training'},
+	[31] = {['video'] = 'IMG_4459.m4v', ['label'] = 1, ['type'] = 'training'}
 }
 
 op = xlua.OptionParser('process_videos.lua [options]')
