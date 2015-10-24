@@ -209,6 +209,9 @@ for videoNumber, video in ipairs(videos) do
 		res['label'] = video['label']
 
 		local num_process = torch.random() % 4
+		if video['label'] == 'validation' then
+			num_process = 0
+		end
 		while num_process > 0 do
 			local i = (torch.random() % tensor:size(1)) + 1
 			table.insert(for_preprocessing, tensor:sub(i,i))
