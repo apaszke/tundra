@@ -14,7 +14,7 @@ torch.setdefaulttensortype('torch.FloatTensor')
 videos = {
 	[1] = {['video'] = 'IMG_4428.m4v', ['label'] = 1, ['type'] = 'training'},
 	[2] = {['video'] = 'IMG_4429.m4v', ['label'] = 1, ['type'] = 'training'},
-	[3] = {['video'] = 'IMG_4430.m4v', ['label'] = 1, ['type'] = 'validation'},
+	[3] = {['video'] = 'IMG_4430.m4v', ['label'] = 1, ['type'] = 'training'},
 	[4] = {['video'] = 'IMG_4431.m4v', ['label'] = 1, ['type'] = 'training'},
 	[5] = {['video'] = 'IMG_4432.m4v', ['label'] = 1, ['type'] = 'training'},
 
@@ -101,7 +101,6 @@ videos = {
 	[81] = {['video'] = 'IMG_4512.m4v', ['label'] = 2, ['type'] = 'training'},
 	[82] = {['video'] = 'IMG_4513.m4v', ['label'] = 2, ['type'] = 'training'},
 
-
 	[83] = {['video'] = 'IMG_4514.m4v', ['label'] = 1, ['type'] = 'training'},
 	[84] = {['video'] = 'IMG_4515.m4v', ['label'] = 1, ['type'] = 'training'},
 	[85] = {['video'] = 'IMG_4516.m4v', ['label'] = 1, ['type'] = 'training'},
@@ -136,7 +135,6 @@ videos = {
 	[112] = {['video'] = 'IMG_4545.m4v', ['label'] = 3, ['type'] = 'validation'},
 	[113] = {['video'] = 'IMG_4546.m4v', ['label'] = 3, ['type'] = 'validation'},
 	[114] = {['video'] = 'IMG_4547.m4v', ['label'] = 3, ['type'] = 'validation'},
-
 
 	[118] = {['video'] = 'IMG_4550.m4v', ['label'] = 2, ['type'] = 'validation'},
 	[119] = {['video'] = 'IMG_4551.m4v', ['label'] = 2, ['type'] = 'validation'},
