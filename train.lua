@@ -63,22 +63,16 @@ end
 
 -- define CNN
 local cnn = nn.Sequential()
-cnn:add( nn.SpatialConvolution(1, 20, 5, 5, 2, 2) )
+cnn:add( nn.SpatialConvolution(1, 20, 5, 5, 3, 3) )
 cnn:add( nn.Dropout(opt.dropout) )
 cnn:add( nn.ReLU() )
-cnn:add( nn.SpatialConvolution(20, 20, 5, 5, 2, 2) )
+cnn:add( nn.SpatialConvolution(20, 20, 5, 5, 4, 4) )
 cnn:add( nn.Dropout(opt.dropout) )
 cnn:add( nn.ReLU() )
-cnn:add( nn.SpatialConvolution(20, 20, 5, 5, 3, 3) )
+cnn:add( nn.SpatialConvolution(20, 400, 19, 35) )
 cnn:add( nn.Dropout(opt.dropout) )
 cnn:add( nn.ReLU() )
-cnn:add( nn.SpatialConvolution(20, 800, 18, 34) )
-cnn:add( nn.Dropout(opt.dropout) )
-cnn:add( nn.ReLU() )
-cnn:add( nn.SpatialConvolution(800, 600, 1, 1) )
-cnn:add( nn.Dropout(opt.dropout) )
-cnn:add( nn.ReLU() )
-cnn:add( nn.View(1, 600) )
+cnn:add( nn.View(1, 400) )
 -- output is of size 1x600
 
 local loader = BatchLoader.create(opt.data_dir)
@@ -92,7 +86,7 @@ if string.len(opt.init_from) > 0 then
 else
     print('creating an LSTM with ' .. opt.rnn_size .. ' units in ' .. opt.num_layers .. ' layers')
     protos = {}
-    protos.rnn, forget_gates = LSTM.create(600, 3, opt.rnn_size, opt.num_layers, opt.dropout)
+    protos.rnn, forget_gates = LSTM.create(400, 3, opt.rnn_size, opt.num_layers, opt.dropout)
     protos.criterion = nn.ClassNLLCriterion()
 end
 
