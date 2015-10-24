@@ -9,8 +9,6 @@ cmd:text()
 cmd:text('Predict who is walking in the clip')
 cmd:text()
 cmd:text('Options')
--- data
-
 cmd:option('-video_dir','','path to directory with video frames')
 cmd:option('-ext','png','path to directory with video frames')
 cmd:option('-model','','path to model file')
@@ -20,7 +18,7 @@ cmd:text()
 opt = cmd:parse(arg)
 
 if opt.video_dir == '' or opt.model == '' then
-  exit()
+  error('No video directory or model file specified')
 end
 
 checkpoint = torch.load(opt.model)
