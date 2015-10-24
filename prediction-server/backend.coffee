@@ -21,7 +21,6 @@ processVideo = (cb) ->
             if err
                 cb "Error with ffmpeg"
                 return
-            # Here goes lua predict
             cmd = "th predict.lua -video_dir #{ServerDir}/#{FramesDir} -model #{ServerDir}/cp.t7"
             exec cmd, {cwd: '..'}, (error, stdout, stderr) ->
                 if err
@@ -41,10 +40,12 @@ io.on "connection", (socket) ->
     uploader = new siofu()
     uploader.dir = __dirname
     uploader.listen socket
-    uploader.on 'saved', ->
+    uploader.on 'saved', (evt) =>
         console.log "saved"
-        processVideo (err, prediction) ->
+        processVideo (err, prediction) =>
             if err
                 console.error err
+                socket.emit 'error'
             else
-                res.send prediction
+                socket.emit 'prediction', prediction
+                fs.unlink evt.file.pathName
