@@ -30,8 +30,7 @@ cmd:option('-seq_length',75,'number of timesteps to unroll for')
 cmd:option('-warmup_length',80,'number of timesteps to unroll for')
 cmd:option('-max_epochs',30,'number of full passes through the training data')
 cmd:option('-grad_clip',5,'clip gradients at this value')
-
-cmd:option('-init_from', '', 'initialize network parameters from checkpoint at this path')
+cmd:option('-max_norm',1e-2,'max weight norm')
 -- bookkeeping
 cmd:option('-seed',123,'torch manual random number generator seed')
 cmd:option('-print_every',1,'how many steps/minibatches between printing out the loss')
@@ -242,6 +241,7 @@ end
 local train_losses = train_losses or {}
 local val_losses = val_losses or {}
 
+local params = cnn:parameters()
 local optim_fun, optim_state
 if opt.optim_algo == 'rmsprop' then
     optim_fun = optim.rmsprop
@@ -259,6 +259,14 @@ for i = start_iter, iterations do
     local timer = torch.Timer()
     local _, loss = optim_fun(feval, params, optim_state)
     local time = timer:time().real
+
+    if opt.max_norm > 0 then
+      for tensor in params do
+        if tensor:dims() > 1 then
+          tensor:renorm(2, 1, opt.max_norm)
+        end
+      end
+    end
 
     local train_loss = loss[1] -- the loss is inside a list, pop it
     train_losses[i] = train_loss
