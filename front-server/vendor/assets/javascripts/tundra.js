@@ -11,14 +11,14 @@ socket.on('prediction', function(msg) {
     var results = msg.split(" ").map(function(x){
         return parseFloat(x);
     });
-
+    results.pop()
     var context = document.getElementById("result-chart").getContext("2d");
     var data = {
         labels: ["Mateusz", "Janusz", "Rafał"],
         datasets: [
             {
-                fillColor : "rgba(172,194,132,0.4)",
-                strokeColor : "#ACC26D",
+                fillColor : "rgba(255,255,255,0.9)",
+                strokeColor : "rgba(255,255,255,0.9)",
                 data : results
             }
         ]
