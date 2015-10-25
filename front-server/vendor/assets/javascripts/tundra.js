@@ -1,17 +1,30 @@
 var socket = io(window.location.hostname + ':3001');
 var uploader = new SocketIOFileUpload(socket);
 var spinner;
-
+var result_chart;
 
 socket.on('prediction', function(msg) {
-    // $('#spinner').data('spinner').stop();
+    // removes old chart if exists
+    if (result_chart)
+        result_chart.destroy();
 
-    console.log('message: ' + msg);
-    setTimeout(function() { $('#spinner').fadeOut(); }, 200);
+    // new upload button has to have a new 'name'
+    $('#upload-button').html('Upload new video');
+
+    // stops spinner and adds new upload button
+    setTimeout(function() {
+        $('#spinner').fadeOut(100, function() {
+            $('#upload-button').fadeIn(300);
+            spinner.stop();
+        });
+    }, 200);
+
+    // parses results
     var results = msg.split(" ").map(function(x){
         return parseFloat(x);
     });
-    results.pop()
+    results.pop();
+
     var context = document.getElementById("result-chart").getContext("2d");
     var data = {
         labels: ["Mateusz", "Janusz", "Rafał"],
@@ -26,16 +39,16 @@ socket.on('prediction', function(msg) {
 
     var options = {
         //Boolean - Whether the scale should start at zero, or an order of magnitude down from the lowest value
-        scaleBeginAtZero : true,
+        scaleBeginAtZero: true,
 
         //Boolean - Whether grid lines are shown across the chart
-        scaleShowGridLines : true,
+        scaleShowGridLines: true,
 
         //String - Colour of the grid lines
-        scaleGridLineColor : "rgba(0,0,0,.05)",
+        scaleGridLineColor: "rgba(0,0,0,.05)",
 
         //Number - Width of the grid lines
-        scaleGridLineWidth : 1,
+        scaleGridLineWidth: 1,
 
         //Boolean - Whether to show horizontal lines (except X axis)
         scaleShowHorizontalLines: true,
@@ -44,32 +57,31 @@ socket.on('prediction', function(msg) {
         scaleShowVerticalLines: true,
 
         //Boolean - If there is a stroke on each bar
-        barShowStroke : true,
+        barShowStroke: true,
 
         //Number - Pixel width of the bar stroke
-        barStrokeWidth : 2,
+        barStrokeWidth: 2,
 
         //Number - Spacing between each of the X value sets
-        barValueSpacing : 5,
+        barValueSpacing: 5,
 
         //Number - Spacing between data sets within X values
-        barDatasetSpacing : 1,
+        barDatasetSpacing: 1,
 
+        // labels config
         scaleFontColor: "#ffffff",
-
         scaleFontSize: 19,
 
         //String - A legend template
-        legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].fillColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
+        legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].fillColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
 
     }
-    var result_chart = new Chart(context).Bar(data, options);
+
+    result_chart = new Chart(context).Bar(data, options);
 });
 
 
 $(function() {
-
-
     uploader.listenOnInput(document.getElementById("file-input"));
 
     $('#upload-button').on('click', function(e) {
@@ -78,7 +90,7 @@ $(function() {
     });
 
     $(document).on('change', '#file-input', function(){
-        $('#upload-button').fadeOut(400, function(){
+        $('#upload-button').fadeOut(400, function() {
             $('#spinner').fadeIn(600);
         });
 
