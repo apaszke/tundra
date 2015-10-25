@@ -48,7 +48,8 @@ Now you can open your browser at `localhost:1337` and test the neural network.
 # Trivia
 
 ### When it started
-We've done a prototype of tundra-force
+We've done a prototype of tundra during AGHacks 2015.
+
 ### Inspiration
 People can easily recognize the walking style of their friends.
 Let's see if we can teach a computer to identify walking people on videos.
