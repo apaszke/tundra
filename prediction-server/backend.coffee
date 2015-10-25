@@ -29,7 +29,7 @@ processVideo = (filename, cb) ->
 
 app = express()
     .use(siofu.router)
-    .listen 3001
+    .listen 3001, '0.0.0.0'
 
 io = new SocketIo
 io.listen app
