@@ -15,6 +15,7 @@ cmd:text('Options')
 -- data
 cmd:option('-data_dir','data','data directory')
 cmd:option('-checkpoint_dir','checkpoint','checkpoint directory')
+cmd:option('-proto_file','proto/base.lua','cnn prototype file')
 -- model params
 cmd:option('-rnn_size', 64, 'size of LSTM internal state')
 cmd:option('-num_layers', 2, 'number of layers in the LSTM')
@@ -62,23 +63,10 @@ if opt.gpuid >= 0 then
 end
 
 -- define CNN
-local cnn = nn.Sequential()
-cnn:add( nn.SpatialConvolution(1, 20, 3, 3, 2, 2) )
-cnn:add( nn.Dropout(opt.dropout) )
-cnn:add( nn.ReLU() )
-cnn:add( nn.SpatialConvolution(20, 15, 3, 3, 2, 2) )
-cnn:add( nn.Dropout(opt.dropout) )
-cnn:add( nn.ReLU() )
-cnn:add( nn.SpatialConvolution(15, 10, 5, 5, 3, 3) )
-cnn:add( nn.Dropout(opt.dropout) )
-cnn:add( nn.ReLU() )
-cnn:add( nn.SpatialConvolution(10, 600, 19, 34) )
-cnn:add( nn.Dropout(opt.dropout) )
-cnn:add( nn.ReLU() )
-cnn:add( nn.View(1, 600) )
+dofile(opt.proto_file)
 -- output is of size 1x600
 
--- print(cnn:forward(torch.randn(1,427,240)):size())
+print(cnn:forward(torch.randn(1,427,240)):size())
 
 local loader = BatchLoader.create(opt.data_dir)
 
