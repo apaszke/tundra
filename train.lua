@@ -72,15 +72,10 @@ local loader = BatchLoader.create(opt.data_dir)
 local do_random_init = true
 local start_iter = 1
 local forget_gates = {}
-if string.len(opt.init_from) > 0 then
-    print('not supported. exiting.')
-    exit()
-else
-    print('creating an LSTM with ' .. opt.rnn_size .. ' units in ' .. opt.num_layers .. ' layers')
-    protos = {}
-    protos.rnn, forget_gates = LSTM.create(600, 3, opt.rnn_size, opt.num_layers, opt.dropout)
-    protos.criterion = nn.ClassNLLCriterion()
-end
+print('creating an LSTM with ' .. opt.rnn_size .. ' units in ' .. opt.num_layers .. ' layers')
+protos = {}
+protos.rnn, forget_gates = LSTM.create(600, 3, opt.rnn_size, opt.num_layers, opt.dropout)
+protos.criterion = nn.ClassNLLCriterion()
 
 -- the initial state of the cell/hidden states
 local init_state = {}
@@ -241,7 +236,7 @@ end
 local train_losses = train_losses or {}
 local val_losses = val_losses or {}
 
-local params = cnn:parameters()
+local params_table = cnn:parameters()
 local optim_fun, optim_state
 if opt.optim_algo == 'rmsprop' then
     optim_fun = optim.rmsprop
@@ -261,8 +256,9 @@ for i = start_iter, iterations do
     local time = timer:time().real
 
     if opt.max_norm > 0 then
-      for tensor in params do
-        if tensor:dims() > 1 then
+      for i = 1,#params_table do
+        local tensor = params_table[i]
+        if tensor:dim() > 1 then
           tensor:renorm(2, 1, opt.max_norm)
         end
       end
