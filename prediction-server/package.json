@@ -1,5 +1,5 @@
 {
-  "name": "aghacks",
+  "name": "tundra",
   "version": "1.0.0",
   "description": "Predict who is walking in the clip",
   "main": "index.js",
@@ -13,9 +13,9 @@
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/apaszke/aghacks/issues"
+    "url": "https://github.com/apaszke/tundra/issues"
   },
-  "homepage": "https://github.com/apaszke/aghacks#readme",
+  "homepage": "https://github.com/apaszkei/tundra#readme",
   "dependencies": {
     "express": "^4.13.3",
     "socket.io": "^1.3.7",
