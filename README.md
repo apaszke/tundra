@@ -2,6 +2,10 @@
 *Identification of people on videos based on their walking style
 using convolutional and recurrent neural networks.*
 
+# To do
+
+* Add a section about using your own neural network with *tundra*.
+
 # Installation
 We use a lot of technologies, so you've got to do a lot of stuff.
 
@@ -29,6 +33,17 @@ npm install
 ```
 
 # How to launch:
+
+### Run Frontend Server:
+``` bash
+./run-frontend-server.sh
+```
+### Run Prediction Server
+``` bash
+./run-prediction-server.sh
+```
+# How to use
+Now you can open your browser at `localhost:1337` and test the neural network.
 
 # Trivia
 
