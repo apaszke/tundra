@@ -63,17 +63,22 @@ end
 
 -- define CNN
 local cnn = nn.Sequential()
-cnn:add( nn.SpatialConvolution(1, 20, 5, 5, 3, 3) )
+cnn:add( nn.SpatialConvolution(1, 20, 3, 3, 2, 2) )
 cnn:add( nn.Dropout(opt.dropout) )
 cnn:add( nn.ReLU() )
-cnn:add( nn.SpatialConvolution(20, 20, 5, 5, 4, 4) )
+cnn:add( nn.SpatialConvolution(20, 15, 3, 3, 2, 2) )
 cnn:add( nn.Dropout(opt.dropout) )
 cnn:add( nn.ReLU() )
-cnn:add( nn.SpatialConvolution(20, 400, 19, 35) )
+cnn:add( nn.SpatialConvolution(15, 10, 5, 5, 3, 3) )
 cnn:add( nn.Dropout(opt.dropout) )
 cnn:add( nn.ReLU() )
-cnn:add( nn.View(1, 400) )
+cnn:add( nn.SpatialConvolution(10, 600, 19, 34) )
+cnn:add( nn.Dropout(opt.dropout) )
+cnn:add( nn.ReLU() )
+cnn:add( nn.View(1, 600) )
 -- output is of size 1x600
+
+-- print(cnn:forward(torch.randn(1,427,240)):size())
 
 local loader = BatchLoader.create(opt.data_dir)
 
