@@ -91,7 +91,7 @@ if string.len(opt.init_from) > 0 then
 else
     print('creating an LSTM with ' .. opt.rnn_size .. ' units in ' .. opt.num_layers .. ' layers')
     protos = {}
-    protos.rnn, forget_gates = LSTM.create(400, 3, opt.rnn_size, opt.num_layers, opt.dropout)
+    protos.rnn, forget_gates = LSTM.create(600, 3, opt.rnn_size, opt.num_layers, opt.dropout)
     protos.criterion = nn.ClassNLLCriterion()
 end
 
