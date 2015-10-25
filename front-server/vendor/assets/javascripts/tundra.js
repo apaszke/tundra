@@ -1,21 +1,29 @@
-var socket = io('localhost:3001');
+var socket = io(window.location.hostname + ':3001');
 var uploader = new SocketIOFileUpload(socket);
-
 var spinner;
 
 
-socket.on('prediction', function(msg){
+socket.on('prediction', function(msg) {
+    // $('#spinner').data('spinner').stop();
+
     console.log('message: ' + msg);
-    $('#spinner').fadeOut();
+    setTimeout(function() { $('#spinner').fadeOut(); }, 200);
     var results = msg.split(" ").map(function(x){
         return parseFloat(x);
-    })
-    var results = [0.2, 0.5, 0.3];
-    var context = document.getElementById("myChart").getContext("2d");
+    });
+
+    var context = document.getElementById("result-chart").getContext("2d");
     var data = {
         labels: ["Mateusz", "Janusz", "Rafał"],
-        datasets: results
+        datasets: [
+            {
+                fillColor : "rgba(172,194,132,0.4)",
+                strokeColor : "#ACC26D",
+                data : results
+            }
+        ]
     };
+
     var options = {
         //Boolean - Whether the scale should start at zero, or an order of magnitude down from the lowest value
         scaleBeginAtZero : true,
@@ -46,6 +54,10 @@ socket.on('prediction', function(msg){
 
         //Number - Spacing between data sets within X values
         barDatasetSpacing : 1,
+
+        scaleFontColor: "#ffffff",
+
+        scaleFontSize: 19,
 
         //String - A legend template
         legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].fillColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
